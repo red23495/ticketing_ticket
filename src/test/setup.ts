@@ -21,6 +21,8 @@ global.get_cookie = () => {
   return [`session=${session}`];
 };
 
+jest.mock("../nats-client");
+
 let mongo: MongoMemoryServer;
 
 beforeAll(async () => {

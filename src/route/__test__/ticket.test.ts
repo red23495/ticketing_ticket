@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import request from "supertest";
 import app from "../../app";
 import Ticket from "../../model/ticket";
+import { natsClient } from "../../nats-client";
 
 describe("testing ticket creation endpoint", () => {
   it("allows post requests on /api/tickets", async () => {
@@ -69,6 +70,7 @@ describe("testing ticket creation endpoint", () => {
       })
       .expect(201);
     expect((await Ticket.find({})).length).toEqual(1);
+    expect(natsClient.client.publish).toHaveBeenCalled();
   });
 });
 
@@ -188,5 +190,6 @@ describe("testing update api", () => {
       .expect(200);
     expect(ticketResponse.body.title).toEqual(title);
     expect(ticketResponse.body.price).toEqual(price);
+    expect(natsClient.client.publish).toHaveBeenCalled();
   });
 });

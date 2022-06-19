@@ -5,7 +5,9 @@ import {
 } from "@mrticketing/common";
 import express, { Request, Response } from "express";
 import { body } from "express-validator";
+import { TicketCreatedPublisher } from "../event/ticket-created-publisher";
 import Ticket from "../model/ticket";
+import { natsClient } from "../nats-client";
 
 const router = express.Router();
 
@@ -26,6 +28,12 @@ router.post(
       price,
       userId: req.currentUser!.id,
     }).save();
+    await new TicketCreatedPublisher(natsClient.client).publish({
+      id: ticket.id,
+      title: ticket.title,
+      price: ticket.price.toFixed(2),
+      userId: ticket.userId
+    });
     return res.status(201).send(ticket);
   }
 );
@@ -62,6 +70,12 @@ router.put(
     }
     ticket.set({ title, price });
     await ticket.save();
+    await new TicketCreatedPublisher(natsClient.client).publish({
+      id: ticket.id,
+      title: ticket.title,
+      price: ticket.price.toFixed(2),
+      userId: ticket.userId,
+    });
     return res.status(200).send(ticket);
   }
 );
